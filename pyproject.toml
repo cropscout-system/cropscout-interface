@@ -1,0 +1,19 @@
+[project]
+name = "cropscout-interface"
+version = "0.1.0"
+description = "Interface for the CROPSCOUT drone control system"
+authors = [
+    { name = "kgleba", email = "kgleba@yandex.ru" }
+]
+dependencies = [
+    "fastapi[standard]>=0.115.12",
+    "pyjwt>=2.10.1",
+    "sqlmodel>=0.0.24",
+    "pydantic>=2.11.3",
+]
+readme = "README.md"
+requires-python = ">= 3.12"
+
+[tool.rye]
+managed = true
+dev-dependencies = []

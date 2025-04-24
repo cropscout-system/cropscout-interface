@@ -1,0 +1,18 @@
+services:
+  cropscout:
+    build: .
+    container_name: cropscout-interface
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./data:/data
+    environment:
+      - DATABASE_URL=sqlite:///data/cropscout.db
+      - SECRET_KEY=your-secret-key-change-in-production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
