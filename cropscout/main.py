@@ -35,7 +35,7 @@ app.mount('/static', StaticFiles(directory=str(STATIC_ROOT.absolute())), name='s
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 ALGORITHM = 'HS256'
-TOKEN_EXPIRE_MINUTES = 60
+TOKEN_EXPIRE_MINUTES = 12 * 60
 
 # TODO: Replace with fastapi-users
 users = {'admin': {'password_hash': hashlib.sha256(b'admin').hexdigest(), 'is_admin': True}}

@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
             .then(response => response.json())
             .then(data => {
+                token = data.access_token;
                 localStorage.setItem('auth_token', data.access_token);
             })
             .catch(error => {
