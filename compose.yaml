@@ -4,7 +4,7 @@ services:
     container_name: cropscout-interface
     restart: unless-stopped
     ports:
-      - '8000:8000'
+      - '80:8000'
     volumes:
       - ./data:/data
     environment:
