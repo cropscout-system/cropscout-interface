@@ -1,7 +1,8 @@
 FROM python:3.12-slim-bookworm
 
-ADD git@github.com:cropscout-system/cropscout-interface /app
+WORKDIR app
+ADD https://github.com/cropscout-system/cropscout-interface.git .
 RUN pip install -r requirements.lock
 
-WORKDIR /app/cropscout
+WORKDIR cropscout
 CMD python3 main.py
