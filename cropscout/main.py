@@ -1,6 +1,7 @@
 import hashlib
 import operator
 import os
+import subprocess
 import uuid
 from datetime import UTC, datetime, timedelta
 from itertools import accumulate
@@ -27,6 +28,7 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
+
 
 STATIC_ROOT = Path('static')
 app.mount('/static', StaticFiles(directory=str(STATIC_ROOT.absolute())), name='static')
@@ -257,4 +259,11 @@ async def get_home():
 if __name__ == '__main__':
     setup_db()
 
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    subprocess.Popen(['python3', '-m', 'httpsredirect'])  # noqa: S603, S607
+    uvicorn.run(
+        app,
+        host='0.0.0.0',
+        port=443,
+        ssl_keyfile=os.getenv('SSL_KEY_FILE'),
+        ssl_certfile=os.getenv('SSL_CERT_FILE'),
+    )
