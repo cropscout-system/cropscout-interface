@@ -7,21 +7,36 @@ let isDroneInMotion = false;
 let mapLayer, satelliteLayer;
 let terrainChart = null;
 let pendingWaypointLocation = null;
+let missionCancelled = false;
 
 const ELEVATION_API_URL = 'https://api.open-elevation.com/api/v1/lookup';
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if user is logged in
-    if (token) {
-        document.getElementById('loginContainer').style.display = 'none';
-        document.getElementById('appContainer').style.display = 'grid';
-        initializeMap();
-        loadSavedRoutes();
-        setupEventListeners();
-    } else {
-        setupLoginForm();
+    console.log('Authentication disabled for demo purposes');
+    if (!token) {
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username: 'admin', password: 'admin'})
+        })
+            .then(response => response.json())
+            .then(data => {
+                localStorage.setItem('auth_token', data.access_token);
+            })
+            .catch(error => {
+                console.error('Auto-login error:', error);
+                setupLoginForm();
+            });
     }
+
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('appContainer').style.display = 'grid';
+    initializeMap();
+    loadSavedRoutes();
+    setupEventListeners();
 });
 
 // Initialize Leaflet map
@@ -34,11 +49,12 @@ function initializeMap() {
     }).addTo(map);
 
     // Define map layers
-    mapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    mapLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
         maxZoom: 19
     });
-    
+
     satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '&copy; <a href="https://www.esri.com/en-us/home">Esri</a>',
         maxZoom: 19
@@ -46,7 +62,7 @@ function initializeMap() {
 
     // Default to satellite view
     satelliteLayer.addTo(map);
-    
+
     // Add click listener for adding waypoints
     map.on('contextmenu', function (e) {
         pendingWaypointLocation = e.latlng;
@@ -104,20 +120,20 @@ function setupEventListeners() {
         document.getElementById('mapViewBtn').classList.add('active');
         document.getElementById('satelliteViewBtn').classList.remove('active');
     });
-    
+
     document.getElementById('satelliteViewBtn').addEventListener('click', () => {
         map.removeLayer(mapLayer);
         satelliteLayer.addTo(map);
         document.getElementById('satelliteViewBtn').classList.add('active');
         document.getElementById('mapViewBtn').classList.remove('active');
     });
-    
+
     // Terrain modal buttons
     document.getElementById('cancelAltitude').addEventListener('click', () => {
         document.getElementById('terrainModal').style.display = 'none';
         pendingWaypointLocation = null;
     });
-    
+
     document.getElementById('confirmAltitude').addEventListener('click', () => {
         if (pendingWaypointLocation) {
             const altitude = parseFloat(document.getElementById('altitudeValue').innerText);
@@ -127,7 +143,7 @@ function setupEventListeners() {
             pendingWaypointLocation = null;
         }
     });
-    
+
     // Altitude slider
     document.getElementById('altitudeSlider').addEventListener('input', (e) => {
         const value = parseFloat(e.target.value);
@@ -185,10 +201,10 @@ async function fetchTerrainData(latlng) {
         // Show loading state in the terrain modal
         document.getElementById('terrainModal').style.display = 'flex';
         document.getElementById('terrainChart').innerHTML = 'Loading terrain data...';
-        
+
         // Calculate a grid of points around the clicked location for terrain profile
         const points = generateTerrainSamplePoints(latlng, 20, 5);
-        
+
         // Fetch elevation data for all points
         const response = await fetch(ELEVATION_API_URL, {
             method: 'POST',
@@ -199,20 +215,20 @@ async function fetchTerrainData(latlng) {
                 locations: points
             })
         });
-        
+
         if (!response.ok) {
             throw new Error('Failed to fetch elevation data');
         }
-        
+
         const data = await response.json();
         const elevations = data.results.map(point => point.elevation);
-        
+
         // Calculate minimum, recommended and safe altitudes
         const minElevation = Math.max(...elevations);
         const avgElevation = elevations.reduce((a, b) => a + b, 0) / elevations.length;
         const recommendedAlt = Math.max(minElevation + 2, avgElevation);
         const safeAlt = recommendedAlt + 4;
-        
+
         // Configure altitude slider - with 0.2 step precision
         const slider = document.getElementById('altitudeSlider');
         slider.min = Math.floor(minElevation * 5) / 5; // Round to nearest 0.2
@@ -220,21 +236,21 @@ async function fetchTerrainData(latlng) {
         slider.value = Math.ceil(recommendedAlt * 5) / 5; // Round to nearest 0.2
         slider.step = 0.2; // Ensure step is set
         document.getElementById('altitudeValue').innerText = (Math.ceil(recommendedAlt * 5) / 5).toFixed(1) + ' m';
-        
+
         // Update zone indicators
         const range = slider.max - slider.min;
         const recommendedPercent = ((recommendedAlt - slider.min) / range) * 100;
         const safePercent = ((safeAlt - slider.min) / range) * 100;
-        
+
         document.getElementById('zoneMin').style.width = recommendedPercent + '%';
         document.getElementById('zoneRecommended').style.left = recommendedPercent + '%';
         document.getElementById('zoneRecommended').style.width = (safePercent - recommendedPercent) + '%';
         document.getElementById('zoneSafe').style.left = safePercent + '%';
         document.getElementById('zoneSafe').style.width = (100 - safePercent) + '%';
-        
+
         // Display terrain profile chart
         displayTerrainChart(points, elevations, recommendedAlt, safeAlt);
-        
+
     } catch (error) {
         console.error('Error fetching terrain data:', error);
         alert('Failed to fetch terrain data. Please try again.');
@@ -246,19 +262,19 @@ async function fetchTerrainData(latlng) {
 function generateTerrainSamplePoints(latlng, count, radiusKm) {
     const points = [];
     // Center point
-    points.push({ latitude: latlng.lat, longitude: latlng.lng });
-    
+    points.push({latitude: latlng.lat, longitude: latlng.lng});
+
     // Generate a line of points in a west-east direction (for profile visualization)
     for (let i = 1; i <= count; i++) {
         // West points
         const westLng = latlng.lng - (i * (radiusKm / count) / 111.32 / Math.cos(latlng.lat * (Math.PI / 180)));
-        points.push({ latitude: latlng.lat, longitude: westLng });
-        
+        points.push({latitude: latlng.lat, longitude: westLng});
+
         // East points
         const eastLng = latlng.lng + (i * (radiusKm / count) / 111.32 / Math.cos(latlng.lat * (Math.PI / 180)));
-        points.push({ latitude: latlng.lat, longitude: eastLng });
+        points.push({latitude: latlng.lat, longitude: eastLng});
     }
-    
+
     return points;
 }
 
@@ -266,23 +282,23 @@ function generateTerrainSamplePoints(latlng, count, radiusKm) {
 function displayTerrainChart(points, elevations, recommendedAlt, safeAlt) {
     const ctx = document.getElementById('terrainChart');
     ctx.innerHTML = '';
-    
+
     const canvas = document.createElement('canvas');
     ctx.appendChild(canvas);
-    
+
     if (terrainChart) {
         terrainChart.destroy();
     }
-    
+
     // Sort points from west to east for proper display
     const sortedData = points.map((point, index) => ({
         point: point,
         elevation: elevations[index]
     })).sort((a, b) => a.point.longitude - b.point.longitude);
-    
+
     const labels = sortedData.map((item, index) => index);
     const data = sortedData.map(item => item.elevation);
-    
+
     terrainChart = new Chart(canvas, {
         type: 'line',
         data: {
@@ -370,7 +386,7 @@ function displayTerrainChart(points, elevations, recommendedAlt, safeAlt) {
                     borderWidth: 1,
                     displayColors: true,
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + ' m';
                         }
                     }
@@ -588,46 +604,46 @@ function refreshWaypointMarkers() {
 // Optimize route to avoid crossings (using nearest neighbor approach)
 function optimizeRoute() {
     if (currentRoute.waypoints.length <= 2) return;
-    
+
     const optimizedWaypoints = [];
     const remainingIndices = currentRoute.waypoints.map((_, i) => i);
-    
+
     // Start with the first waypoint
     let currentIdx = 0;
     optimizedWaypoints.push({...currentRoute.waypoints[currentIdx]});
     remainingIndices.splice(remainingIndices.indexOf(currentIdx), 1);
-    
+
     // Find the nearest neighbor for each subsequent waypoint
     while (remainingIndices.length > 0) {
         const currentPoint = optimizedWaypoints[optimizedWaypoints.length - 1];
-        
+
         // Find nearest point
         let minDist = Infinity;
         let nearestIdx = -1;
-        
+
         for (const idx of remainingIndices) {
             const wp = currentRoute.waypoints[idx];
             const dist = calculateDistance([currentPoint.lat, currentPoint.lng], [wp.lat, wp.lng]);
-            
+
             if (dist < minDist) {
                 minDist = dist;
                 nearestIdx = idx;
             }
         }
-        
+
         // Add nearest point to optimized route
         optimizedWaypoints.push({...currentRoute.waypoints[nearestIdx]});
         remainingIndices.splice(remainingIndices.indexOf(nearestIdx), 1);
     }
-    
+
     // Update waypoint IDs
     optimizedWaypoints.forEach((wp, i) => {
         wp.id = i;
     });
-    
+
     // Save optimized route
     currentRoute.waypoints = optimizedWaypoints;
-    
+
     // Refresh markers and polyline
     refreshWaypointMarkers();
     updateRoutePolyline();
@@ -722,6 +738,16 @@ async function saveCurrentRoute(e) {
 
 // Clear the current route
 function clearCurrentRoute() {
+    if (isDroneInMotion) {
+        missionCancelled = true;
+        isDroneInMotion = false;
+
+        if (droneMarker) {
+            map.removeLayer(droneMarker);
+            droneMarker = null;
+        }
+    }
+
     // Clear waypoints
     currentRoute = {waypoints: []};
     selectedRouteId = null;
@@ -749,6 +775,7 @@ async function startMission() {
     if (isDroneInMotion) {
         return;
     }
+    missionCancelled = false;
 
     if (currentRoute.waypoints.length === 0) {
         alert('No waypoints defined for mission');
@@ -796,7 +823,7 @@ async function startMission() {
 
             if (response.ok) {
                 const savedRoute = await response.json();
-                
+
                 // Start mission with the temporary route
                 const missionResponse = await fetch(`/api/routes/${savedRoute.id}/start`, {
                     method: 'POST',
@@ -876,20 +903,20 @@ function simulateDroneMission() {
 
         // Calculate distance for this segment
         const distance = calculateDistance(
-            [currentWP.lat, currentWP.lng], 
+            [currentWP.lat, currentWP.lng],
             [nextWP.lat, nextWP.lng]
         );
-        
+
         totalDistanceTraveled += distance;
-        
+
         // Determine if drone encounters an obstacle (10% chance)
         const hasObstacle = Math.random() < 0.1;
-        
+
         // Determine segment speed (normal: ~9 m/s, obstacle: ~6 m/s)
         let baseSpeed = hasObstacle ? 6 : 9;
         // Add small random variation (±0.5 m/s)
         const speed = baseSpeed + (Math.random() - 0.5);
-        
+
         // Calculate duration based on speed
         const duration = (distance / speed) * 1000; // in milliseconds
 
@@ -904,7 +931,7 @@ function simulateDroneMission() {
                 // Assuming battery depletes by ~5% for every 1000m
                 batteryLevel = Math.max(0, 100 - (totalDistanceTraveled / 400));
                 document.getElementById('battery-level').textContent = `${Math.round(batteryLevel)}%`;
-                
+
                 // Wait at waypoint for 2 seconds
                 setTimeout(() => {
                     currentWaypointIndex++;
@@ -927,6 +954,10 @@ function animateDroneMovement(startLatLng, endLatLng, duration, speed, callback)
     const lngDiff = endLatLng[1] - startLng;
 
     function animate() {
+        if (missionCancelled) {
+            return;
+        }
+
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
 

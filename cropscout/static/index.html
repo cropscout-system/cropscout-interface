@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>CropScout Drone Control System</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <style>
         * {
@@ -579,152 +579,152 @@
             border-radius: 3px;
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 
 <body>
-    <!-- Login Container -->
-    <div class="login-container" id="loginContainer">
-        <div class="login-box">
-            <h2>Agricultural Drone Management System</h2>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" class="action-button">Login</button>
-            </form>
+<!-- Login Container -->
+<div class="login-container" id="loginContainer">
+    <div class="login-box">
+        <h2>Agricultural Drone Management System</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="action-button">Login</button>
+        </form>
+    </div>
+</div>
+
+<!-- Main Application Container -->
+<div class="container" id="appContainer" style="display: none;">
+    <div class="panel">
+        <h2>Saved Routes</h2>
+        <ul class="route-list" id="routeList">
+            <!-- Routes will be populated here -->
+        </ul>
+
+        <div id="currentRouteInfo" style="display: none;">
+            <h2>Current Route</h2>
+            <div id="currentRouteDetails"></div>
+            <div class="save-route-container" id="saveRouteContainer">
+                <input type="text" id="routeName" placeholder="Route name">
+                <button class="action-button" id="saveRouteBtn">Save Route</button>
+            </div>
+            <button class="action-button danger" id="clearRouteBtn">Clear Route</button>
         </div>
     </div>
 
-    <!-- Main Application Container -->
-    <div class="container" id="appContainer" style="display: none;">
-        <div class="panel">
-            <h2>Saved Routes</h2>
-            <ul class="route-list" id="routeList">
-                <!-- Routes will be populated here -->
-            </ul>
-
-            <div id="currentRouteInfo" style="display: none;">
-                <h2>Current Route</h2>
-                <div id="currentRouteDetails"></div>
-                <div class="save-route-container" id="saveRouteContainer">
-                    <input type="text" id="routeName" placeholder="Route name">
-                    <button class="action-button" id="saveRouteBtn">Save Route</button>
-                </div>
-                <button class="action-button danger" id="clearRouteBtn">Clear Route</button>
+    <div class="main-view">
+        <div class="user-menu">
+            <div class="user-menu-button" id="userMenuBtn">
+                <i class="fas fa-user"></i>
+                <span id="usernameDisplay">Admin</span>
+            </div>
+            <div class="dropdown-content" id="userDropdown">
+                <div class="dropdown-item" id="changePasswordBtn">Change Password</div>
+                <div class="dropdown-item" id="logoutBtn">Logout</div>
             </div>
         </div>
 
-        <div class="main-view">
-            <div class="user-menu">
-                <div class="user-menu-button" id="userMenuBtn">
-                    <i class="fas fa-user"></i>
-                    <span id="usernameDisplay">Admin</span>
-                </div>
-                <div class="dropdown-content" id="userDropdown">
-                    <div class="dropdown-item" id="changePasswordBtn">Change Password</div>
-                    <div class="dropdown-item" id="logoutBtn">Logout</div>
-                </div>
-            </div>
+        <div class="map-toggle">
+            <button id="mapViewBtn">Map</button>
+            <button id="satelliteViewBtn" class="active">Satellite</button>
+        </div>
 
-            <div class="map-toggle">
-                <button id="mapViewBtn">Map</button>
-                <button id="satelliteViewBtn" class="active">Satellite</button>
-            </div>
-
-            <div class="map-container" id="map">
-                <div class="drone-status">
-                    <div class="status-item">
-                        <div class="status-indicator"></div>
-                        Battery: <span id="battery-level">100%</span>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-indicator" style="background: #00ffff;"></div>
-                        Signal: <span id="signal-strength">Strong</span>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-indicator" style="background: #ffff00;"></div>
-                        Speed: <span id="speed">0 m/s</span>
-                    </div>
+        <div class="map-container" id="map">
+            <div class="drone-status">
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    Battery: <span id="battery-level">100%</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator" style="background: #00ffff;"></div>
+                    Signal: <span id="signal-strength">Strong</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator" style="background: #ffff00;"></div>
+                    Speed: <span id="speed">0 m/s</span>
                 </div>
             </div>
+        </div>
 
-            <div class="play-button" id="startMissionBtn" style="display: none;">
-                <i class="fas fa-play"></i>
-            </div>
+        <div class="play-button" id="startMissionBtn" style="display: none;">
+            <i class="fas fa-play"></i>
         </div>
     </div>
+</div>
 
-    <!-- Change Password Modal -->
-    <div class="modal" id="changePasswordModal">
-        <div class="modal-content">
-            <h3 class="modal-title">Change Password</h3>
-            <form id="changePasswordForm">
-                <div class="form-group">
-                    <label for="currentPassword">Current Password</label>
-                    <input type="password" id="currentPassword" name="currentPassword" required>
-                </div>
-                <div class="form-group">
-                    <label for="newPassword">New Password</label>
-                    <input type="password" id="newPassword" name="newPassword" required>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="modal-button cancel" id="cancelChangePassword">Cancel</button>
-                    <button type="submit" class="modal-button primary">Update Password</button>
-                </div>
-            </form>
-        </div>
+<!-- Change Password Modal -->
+<div class="modal" id="changePasswordModal">
+    <div class="modal-content">
+        <h3 class="modal-title">Change Password</h3>
+        <form id="changePasswordForm">
+            <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" name="currentPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" name="newPassword" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-button cancel" id="cancelChangePassword">Cancel</button>
+                <button type="submit" class="modal-button primary">Update Password</button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <!-- Terrain Height Modal -->
-    <div class="terrain-modal" id="terrainModal" style="display: none;">
-        <div class="terrain-container">
-            <div class="terrain-header">
-                <h3 class="modal-title">Terrain Profile & Altitude Selection</h3>
-                <div class="terrain-legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: rgba(255, 0, 0, 0.5);"></div>
-                        <span>Minimum (Ground Level)</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: rgba(255, 165, 0, 0.5);"></div>
-                        <span>Recommended Altitude</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: rgba(0, 255, 0, 0.5);"></div>
-                        <span>Safe Altitude</span>
-                    </div>
+<!-- Terrain Height Modal -->
+<div class="terrain-modal" id="terrainModal" style="display: none;">
+    <div class="terrain-container">
+        <div class="terrain-header">
+            <h3 class="modal-title">Terrain Profile & Altitude Selection</h3>
+            <div class="terrain-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: rgba(255, 0, 0, 0.5);"></div>
+                    <span>Minimum (Ground Level)</span>
                 </div>
-            </div>
-
-            <div class="terrain-chart" id="terrainChart"></div>
-
-            <div class="altitude-slider-container">
-                <div class="altitude-slider">
-                    <div class="altitude-zones">
-                        <div class="zone-min" id="zoneMin"></div>
-                        <div class="zone-recommended" id="zoneRecommended"></div>
-                        <div class="zone-safe" id="zoneSafe"></div>
-                    </div>
-                    <input type="range" id="altitudeSlider" min="0" max="100" value="50" step="0.2">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: rgba(255, 165, 0, 0.5);"></div>
+                    <span>Recommended Altitude</span>
                 </div>
-                <div class="altitude-value" id="altitudeValue">0 m</div>
-            </div>
-
-            <div class="terrain-actions">
-                <button class="modal-button cancel" id="cancelAltitude">Cancel</button>
-                <button class="modal-button primary" id="confirmAltitude">Confirm</button>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: rgba(0, 255, 0, 0.5);"></div>
+                    <span>Safe Altitude</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/static/app.js"></script>
+        <div class="terrain-chart" id="terrainChart"></div>
+
+        <div class="altitude-slider-container">
+            <div class="altitude-slider">
+                <div class="altitude-zones">
+                    <div class="zone-min" id="zoneMin"></div>
+                    <div class="zone-recommended" id="zoneRecommended"></div>
+                    <div class="zone-safe" id="zoneSafe"></div>
+                </div>
+                <input type="range" id="altitudeSlider" min="0" max="100" value="50" step="0.2">
+            </div>
+            <div class="altitude-value" id="altitudeValue">0 m</div>
+        </div>
+
+        <div class="terrain-actions">
+            <button class="modal-button cancel" id="cancelAltitude">Cancel</button>
+            <button class="modal-button primary" id="confirmAltitude">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/static/app.js"></script>
 </body>
 
 </html>

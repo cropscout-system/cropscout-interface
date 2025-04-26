@@ -108,7 +108,11 @@ async def create_route(
 async def get_routes(db: Session = Depends(get_session), username: str = Depends(get_current_user)):
     routes_query = select(Route).where(Route.username == username)
     db_routes = db.exec(routes_query).all()
-    return [convert_db_route(db_route, db_route.waypoints) for db_route in db_routes]
+    return [
+        convert_db_route(db_route, db_route.waypoints)
+        for db_route in db_routes
+        if not db_route.name.startswith('Temporary')
+    ]
 
 
 @app.get('/api/routes/{route_id}', response_model=RouteModel)
