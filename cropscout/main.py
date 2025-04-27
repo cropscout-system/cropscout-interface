@@ -2,7 +2,6 @@ import hashlib
 import operator
 import os
 import uuid
-from datetime import UTC, datetime, timedelta
 from itertools import accumulate
 from pathlib import Path
 from typing import cast
@@ -34,7 +33,6 @@ app.mount('/static', StaticFiles(directory=str(STATIC_ROOT.absolute())), name='s
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 ALGORITHM = 'HS256'
-TOKEN_EXPIRE_MINUTES = 12 * 60
 
 # TODO: Replace with fastapi-users
 users = {'admin': {'password_hash': hashlib.sha256(b'admin').hexdigest(), 'is_admin': True}}
@@ -50,8 +48,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.now(UTC) + timedelta(minutes=TOKEN_EXPIRE_MINUTES)
-    to_encode.update({'exp': expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

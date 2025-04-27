@@ -9,7 +9,7 @@ services:
       - '--entrypoints.websecure.address=:443'
       - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
       - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
-      - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web'
       - '--certificatesresolvers.myresolver.acme.email=kgleba@yandex.ru'
       - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
     ports:
@@ -25,19 +25,14 @@ services:
     build: .
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.vaultwarden.rule=Host(`demo.cropscout.farm`)'
-      - 'traefik.http.routers.vaultwarden.entrypoints=websecure'
-      - 'traefik.http.routers.vaultwarden.tls=true'
-      - 'traefik.http.routers.vaultwarden.tls.certresolver=myresolver'
+      - 'traefik.http.routers.cropscout.rule=Host(`demo.cropscout.farm`)'
+      - 'traefik.http.routers.cropscout.entrypoints=websecure'
+      - 'traefik.http.routers.cropscout.tls=true'
+      - 'traefik.http.routers.cropscout.tls.certresolver=myresolver'
+      - 'traefik.http.services.cropscout.loadbalancer.server.port=8000'
     environment:
       - DATABASE_URL=sqlite:///data/cropscout.db
       - SECRET_KEY=your-secret-key-change-in-production
     volumes:
       - ./cropscout-data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "https://localhost:8000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
     restart: unless-stopped
