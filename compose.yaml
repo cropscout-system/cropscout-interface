@@ -1,21 +1,43 @@
 services:
-  cropscout:
-    build: .
-    container_name: cropscout-interface
-    restart: unless-stopped
+  traefik:
+    image: traefik:v3.3
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
+      - '--certificatesresolvers.myresolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.myresolver.acme.email=kgleba@yandex.ru'
+      - '--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json'
     ports:
       - '80:80'
       - '443:443'
+      - '8080:8080'
     volumes:
-      - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./letsencrypt:/letsencrypt
+    restart: always
+
+  cropscout:
+    build: .
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.vaultwarden.rule=Host(`demo.cropscout.farm`)'
+      - 'traefik.http.routers.vaultwarden.entrypoints=websecure'
+      - 'traefik.http.routers.vaultwarden.tls=true'
+      - 'traefik.http.routers.vaultwarden.tls.certresolver=myresolver'
     environment:
       - DATABASE_URL=sqlite:///data/cropscout.db
       - SECRET_KEY=your-secret-key-change-in-production
-      - SSL_KEY_FILE=/app/keychain/privkey.pem
-      - SSL_CERT_FILE=/app/keychain/fullchain.pem
+    volumes:
+      - ./cropscout-data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "https://localhost:443/"]
+      test: ["CMD", "curl", "-f", "https://localhost:8000/"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
+    restart: unless-stopped

@@ -2,8 +2,6 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR app
 ADD https://github.com/cropscout-system/cropscout-interface.git .
-COPY keychain/ keychain/
-
 RUN pip install -r requirements.lock
 
 WORKDIR cropscout
