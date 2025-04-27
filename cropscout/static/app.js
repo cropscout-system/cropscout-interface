@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialize Leaflet map
 function initializeMap() {
     // Create map centered at specified location
-    map = L.map('map', {attributionControl: false}).setView([55.557411, 37.422311], 16);
+    map = L.map('map', {attributionControl: false}).setView([39.723869, -75.570324], 16);
 
     L.control.attribution({
         prefix: 'Leaflet'
